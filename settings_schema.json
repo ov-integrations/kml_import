@@ -1,0 +1,25 @@
+{
+    "type": "object",
+    "properties": {
+        "urlKMZ": {
+            "type": "string",
+            "pattern": "^http://.*|^https://.*"
+        },
+        "urlOneVizion": {
+            "type": "string",
+            "pattern": "^http://.*|^https://.*"
+        },
+        "loginOneVizion": {
+            "type": "string",
+            "minLength": 1
+        },
+        "passOneVizion": {
+            "type": "string",
+            "minLength": 1
+        },
+        "importName": {
+            "type": "string",
+            "minLength": 1
+        }
+    }
+}
