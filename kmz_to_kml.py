@@ -23,7 +23,7 @@ class Integration:
         try:
             self.file.get_csv()
         except Exception as e:
-            self.delete_files()
+            self.file.delete_files()
             raise Exception(e)
         
         try:
