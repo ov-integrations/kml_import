@@ -4,6 +4,8 @@ Downloads KMZ file from the specified location, extracts data to CSV file and lo
 
 In the KMZ file must be only one KML file, if there is more than one, then the integration will end with an error.
 
+The structure of the KML and CSV files should follow the examples below
+
 Requirements
 - python 3
 - python [OneVizion](https://github.com/Onevizion/API-v3) library (pip install onevizion)
