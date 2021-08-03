@@ -1,7 +1,8 @@
 {
     "urlKMZ": "url",
     "urlOneVizion": "url",
-    "loginOneVizion": "login",
-    "passOneVizion": "password",
-    "importName": "import"
+    "ovAccessKey": "key",
+    "ovSecretKey": "key",
+    "importName": "import",
+    "importAction": "action"
 }
