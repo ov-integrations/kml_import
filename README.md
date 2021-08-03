@@ -1,6 +1,7 @@
 # kml_import
 
 Downloads KMZ file from the specified location, extracts data to CSV file and loads it with the specified OneVizion import.
+
 In the KMZ file must be only one KML file, if there is more than one, then the integration will end with an error.
 
 Requirements
