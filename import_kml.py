@@ -10,9 +10,9 @@ import os
 
 
 class Integration:
-    KMZ = 'fires.kmz'
-    KML = 'fires.kml'
-    CSV = 'fires.csv'
+    KMZ = 'file.kmz'
+    KML = 'file.kml'
+    CSV = 'file.csv'
 
     def __init__(self, kml_file, csv_file, integration_import, integration_log):
         self.kml = kml_file
@@ -43,9 +43,10 @@ class Integration:
 
 class KML:
 
-    def __init__(self, url_fires, integration_log):
-        self.url_fires = url_fires
+    def __init__(self, url, integration_log, integration_exception):
+        self.url = url
         self.integration_log = integration_log
+        self.integration_exception = integration_exception
 
     def get(self, kmz_file, kml_file):
         kmz_content = self.download()
@@ -53,14 +54,13 @@ class KML:
         self.extract(kmz_file, kml_file)
 
     def download(self):
-        url = self.url_fires
-        answer = requests.get(url)
-        if answer.ok:
+        url = self.url
+        response = requests.get(url)
+        if response.ok:
             self.integration_log.add_log(LogLevel.INFO, 'KMZ file downloaded')
-            return answer.content
+            return response.content
         else:
-            self.integration_log.add_log(LogLevel.ERROR, f'Failed download kmz. Exception [{answer.text}]')
-            raise Exception(f'Failed download kmz. Exception [{answer.text}]')
+            self.integration_exception.add(LogLevel.ERROR, f'Failed download kmz. Exception [{response.text}]')
 
     def save(self, kmz_content, kmz_file):
         with open(kmz_file, 'wb') as file:
@@ -70,8 +70,7 @@ class KML:
         kml = zipfile.ZipFile(kmz_file, 'r')
         len_kml = len(kml.filelist)
         if len_kml == 0:
-            self.integration_log.add_log(LogLevel.ERROR, f'Failed extract kml file. Exception [kmz file does not store data]')
-            raise Exception(f'Failed extract kml file. Exception [kmz file does not store data]')
+            self.integration_exception.add(LogLevel.ERROR, f'Failed extract kml file. Exception [kmz file does not store data]')
 
         kml_filename = None
         for file in kml.filelist:
@@ -82,12 +81,10 @@ class KML:
                 if kml_filename is None:
                     kml_filename = file_name
                 else:
-                    self.integration_log.add_log(LogLevel.ERROR, f'Failed extract kml file. Exception [kmz file stores more than one kml file]')
-                    raise Exception(f'Failed extract kml file. Exception [kmz file stores more than one kml file]')
+                    self.integration_exception.add(LogLevel.ERROR, f'Failed extract kml file. Exception [kmz file stores more than one kml file]')
 
         if kml_filename is None:
-            self.integration_log.add_log(LogLevel.ERROR, f'Failed extract kml file. Exception [KML file not found in KMZ]')
-            raise Exception(f'Failed extract kml file. Exception [KML file not found in KMZ]')
+            self.integration_exception.add(LogLevel.ERROR, f'Failed extract kml file. Exception [KML file not found in KMZ]')
         else:
             kml.extract(kml_filename)
             os.rename(kml_filename, kml_file)
@@ -96,8 +93,9 @@ class KML:
 
 class CSV:
 
-    def __init__(self, integration_log):
+    def __init__(self, integration_log, integration_exception):
         self.integration_log = integration_log
+        self.integration_exception = integration_exception
 
     def parse(self, kml_file):
         parse_list = []
@@ -106,28 +104,24 @@ class CSV:
 
         description_with_date = parse.find('description')
         if description_with_date is None:
-            self.integration_log.add_log(LogLevel.ERROR, f'Failed parse kml. Exception [Description for registration_id not found]')
-            raise Exception(f'Failed parse kml. Exception [Description for registration_id not found]')
+            self.integration_exception.add(LogLevel.ERROR, f'Failed parse kml. Exception [Description for registration_id not found]')
 
         date = re.search('\d+-\w+-\d+', description_with_date.text)
         if date is None:
-            self.integration_log.add_log(LogLevel.ERROR, f'Failed parse kml. Exception [Date for registration_id not found]')
-            raise Exception(f'Failed parse kml. Exception [Date for registration_id not found]')
+            self.integration_exception.add(LogLevel.ERROR, f'Failed parse kml. Exception [Date for registration_id not found]')
         else:
             registration_id = f'Fires-{datetime.strptime(date.group(), "%d-%b-%Y").strftime("%m/%d/%y")}'
 
         for placemark in parse.find_all('Placemark'):
             name = placemark.find('name')
             if name is None:
-                self.integration_log.add_log(LogLevel.ERROR, f'Failed parse kml. Exception [Field name not found]')
-                raise Exception(f'Failed parse kml. Exception [Field name not found]')
+                self.integration_exception.add(LogLevel.ERROR, f'Failed parse kml. Exception [Field name not found]')
 
             name = name.text
 
             description = placemark.find('description')
             if description is None:
-                self.integration_log.add_log(LogLevel.ERROR, f'Failed parse kml. Exception [Field description not found]')
-                raise Exception(f'Failed parse kml. Exception [Field description not found]')
+                self.integration_exception.add(LogLevel.ERROR, f'Failed parse kml. Exception [Field description not found]')
 
             description = description.text.strip()
 
@@ -139,19 +133,21 @@ class CSV:
                     break
 
             if fire_type is None:
-                self.integration_log.add_log(LogLevel.ERROR, f'Failed parse kml. Exception [Field fire_type not found]')
-                raise Exception(f'Failed parse kml. Exception [Field fire_type not found]')
+                self.integration_exception.add(LogLevel.ERROR, f'Failed parse kml. Exception [Field fire_type not found]')
 
-            try:
-                fire_size = re.search(r'\d+', re.search(r'\d+\sacres|\d+acres', description).group()).group()
-            except Exception:
-                self.integration_log.add_log(LogLevel.ERROR, f'Failed parse kml. Exception [Field fire_size not found]')
-                raise Exception(f'Failed parse kml. Exception [Field fire_size not found]')
+            fire_size_acres = re.search(r'\d+\sacres|\d+acres', description)
+            if fire_size_acres is None:
+                self.integration_exception.add(LogLevel.ERROR, f'Failed parse kml. Exception [Field fire_size not found]')
+
+            fire_size = re.search(r'\d+', fire_size_acres.group())
+            if fire_size is None:
+                self.integration_exception.add(LogLevel.ERROR, f'Failed parse kml. Exception [Number in fire_size field is not found]')
+
+            fire_size = fire_size.group()
 
             coordinates = placemark.find('Point').find('coordinates')
             if coordinates is None:
-                self.integration_log.add_log(LogLevel.ERROR, f'Failed parse kml. Exception [Field coordinates not found]')
-                raise Exception(f'Failed parse kml. Exception [Field coordinates not found]')
+                self.integration_exception.add(LogLevel.ERROR, f'Failed parse kml. Exception [Field coordinates not found]')
 
             coordinates = re.split(',', coordinates.text)
             parse_list.append({CSVHeader.REG_ID.value:registration_id, CSVHeader.NAME.value:name, CSVHeader.DESCRIPTION.value:description, \
@@ -175,7 +171,7 @@ class CSV:
 
 class Import:
 
-    def __init__(self, url_onevizion, url_onevizion_without_protocol, access_key, secret_key, import_name, import_action, integration_log):
+    def __init__(self, url_onevizion, url_onevizion_without_protocol, access_key, secret_key, import_name, import_action, integration_log, integration_exception):
         self.url_onevizion = url_onevizion
         self.url_onevizion_without_protocol = url_onevizion_without_protocol
         self.access_key = access_key
@@ -183,6 +179,7 @@ class Import:
         self.import_name = import_name
         self.import_action = import_action
         self.integration_log = integration_log
+        self.integration_exception = integration_exception
 
     def import_process(self, csv_file):
         try:
@@ -194,28 +191,36 @@ class Import:
     def get_import(self):
         import_id = None
         url = f'{self.url_onevizion}/api/v3/imports'
-        answer = requests.get(url, headers={'Content-type':'application/json', 'Content-Encoding':'utf-8', 'Authorization':f'Bearer {self.access_key}:{self.secret_key}'})
-        if answer.ok:
-            for import_data in answer.json():
+        response = requests.get(url, headers={'Content-type':'application/json', 'Content-Encoding':'utf-8', 'Authorization':f'Bearer {self.access_key}:{self.secret_key}'})
+        if response.ok:
+            for import_data in response.json():
                 import_name = import_data['name']
                 if import_name == self.import_name:
                     import_id = import_data['id']
                     break
 
             if import_id is None:
-                self.integration_log.add_log(LogLevel.ERROR, f'Import \"{self.import_name}\" not found')
-                raise Exception(f'Import \"{self.import_name}\" not found')
+                self.integration_exception.add(LogLevel.ERROR, f'Import \"{self.import_name}\" not found')
             else:
                 self.integration_log.add_log(LogLevel.INFO, f'Import \"{self.import_name}\" founded')
         else:
-            self.integration_log.add_log(LogLevel.ERROR, f'Failed to receive import. Exception [{str(answer.text)}]')
-            raise Exception(f'Failed to receive import. Exception [{str(answer.text)}]')
+            self.integration_exception.add(LogLevel.ERROR, f'Failed to receive import. Exception [{str(response.text)}]')
 
         return import_id
 
     def start_import(self, import_id, file_name):
         OVImport(self.url_onevizion_without_protocol, self.access_key, self.secret_key, import_id, file_name, self.import_action, isTokenAuth=True)
 
+
+class IntegrationException:
+
+    def __init__(self, integration_log):
+        self.integration_log = integration_log
+
+    def add(self, log_level, message):
+        self.integration_log.add_log(log_level, message)
+        raise Exception(message)
+    
 
 class CSVHeader(Enum):
     REG_ID = 'RegistrationID'
@@ -225,4 +230,3 @@ class CSVHeader(Enum):
     FIRE_TYPE = 'FireType'
     LATITUDE = 'Latitude'
     LONGITUDE = 'Longitude'
-

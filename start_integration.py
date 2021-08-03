@@ -1,5 +1,5 @@
 from jsonschema import validate
-from import_kml import Integration, KML, CSV, Import
+from import_kml import Integration, KML, CSV, Import, IntegrationException
 from onevizion import IntegrationLog
 import json
 import re
@@ -23,10 +23,7 @@ ov_secret_key = settings_data['ovSecretKey']
 import_name = settings_data['importName']
 import_action = settings_data['importAction']
 
-if re.search('https', settings_data['urlOneVizion']) is None:
-    url_onevizion_without_protocol = re.sub('^http://', '', settings_data['urlOneVizion'][:-1])
-else:
-    url_onevizion_without_protocol = re.sub('^https://', '', settings_data['urlOneVizion'][:-1])
+url_onevizion_without_protocol = re.sub('^http://|^https://', '', settings_data['urlOneVizion'][:-1])
 
 with open('ihub_parameters.json', 'rb') as PFile:
     ihub_data = json.loads(PFile.read().decode('utf-8'))
@@ -34,9 +31,10 @@ with open('ihub_parameters.json', 'rb') as PFile:
 process_id = ihub_data['processId']
 
 integration_log = IntegrationLog(process_id, url_onevizion_without_protocol, ov_access_key, ov_secret_key, isTokenAuth=True)
-kml_file = KML(url_kmz, integration_log)
-csv_file = CSV(integration_log)
-integration_import = Import(url_onevizion, url_onevizion_without_protocol, ov_access_key, ov_secret_key, import_name, import_action, integration_log)
+integration_exception = IntegrationException(integration_log)
+kml_file = KML(url_kmz, integration_log, integration_exception)
+csv_file = CSV(integration_log, integration_exception)
+integration_import = Import(url_onevizion, url_onevizion_without_protocol, ov_access_key, ov_secret_key, import_name, import_action, integration_log, integration_exception)
 integration = Integration(kml_file, csv_file, integration_import, integration_log)
 
 integration.start_integration()
