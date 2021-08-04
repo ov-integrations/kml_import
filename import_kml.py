@@ -29,6 +29,9 @@ class Integration:
             parse_list = self.csv.parse(Integration.KML_FILENAME)
             self.csv.create(parse_list, Integration.CSV_FILENAME)
             self.integration_import.import_process(Integration.CSV_FILENAME)
+        except Exception as e:
+            self.integration_log.add(LogLevel.ERROR, str(e))
+            raise e
         finally:
             self.delete_files()
 
