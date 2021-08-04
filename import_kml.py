@@ -21,7 +21,7 @@ class Integration:
         self.integration_log = integration_log
 
     def start_integration(self):
-        self.integration_log.add_log(LogLevel.INFO, 'Starting Integration')
+        self.integration_log.add(LogLevel.INFO, 'Starting Integration')
 
         try:
             self.kml.download_kmz_file(Integration.KMZ_FILENAME)
@@ -32,7 +32,7 @@ class Integration:
         finally:
             self.delete_files()
 
-        self.integration_log.add_log(LogLevel.INFO, 'Integration has been completed')
+        self.integration_log.add(LogLevel.INFO, 'Integration has been completed')
 
     def delete_files(self):
         file_list = [f for f in os.listdir() if f.endswith(('.kmz', '.kml', '.csv'))]
@@ -54,7 +54,7 @@ class KML:
         url = self.url
         response = requests.get(url)
         if response.ok:
-            self.integration_log.add_log(LogLevel.INFO, 'KMZ file downloaded')
+            self.integration_log.add(LogLevel.INFO, 'KMZ file downloaded')
             return response.content
         else:
             raise Exception(f'Failed download KMZ. Exception [{response.text}]')
@@ -85,7 +85,7 @@ class KML:
         else:
             kml.extract(kml_filename_to_extract)
             os.rename(kml_filename_to_extract, kml_filename)
-            self.integration_log.add_log(LogLevel.INFO, 'KML file extracted')
+            self.integration_log.add(LogLevel.INFO, 'KML file extracted')
 
 
 class CSV:
@@ -150,7 +150,7 @@ class CSV:
                                 CSVHeader.FIRE_SIZE.value:fire_size, CSVHeader.FIRE_TYPE.value:fire_type, CSVHeader.LATITUDE.value:coordinates[1], \
                                     CSVHeader.LONGITUDE.value:coordinates[0]})
 
-        self.integration_log.add_log(LogLevel.INFO, 'KML file parsed')
+        self.integration_log.add(LogLevel.INFO, 'KML file parsed')
         return parse_list
 
     def create(self, parse_list, csv_filename):
@@ -162,7 +162,7 @@ class CSV:
             writer.writeheader()
             writer.writerows(parse_list)
 
-        self.integration_log.add_log(LogLevel.INFO, 'CSV file created')
+        self.integration_log.add(LogLevel.INFO, 'CSV file created')
 
 
 class Import:
@@ -194,7 +194,7 @@ class Import:
             if import_id is None:
                 raise Exception(f'Import \"{self.import_name}\" not found')
             else:
-                self.integration_log.add_log(LogLevel.INFO, f'Import \"{self.import_name}\" founded')
+                self.integration_log.add(LogLevel.INFO, f'Import \"{self.import_name}\" founded')
         else:
             raise Exception(f'Failed to receive import. Exception [{str(response.text)}]')
 

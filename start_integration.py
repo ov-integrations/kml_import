@@ -22,7 +22,6 @@ ov_access_key = settings_data['ovAccessKey']
 ov_secret_key = settings_data['ovSecretKey']
 import_name = settings_data['importName']
 import_action = settings_data['importAction']
-log_level = settings_data['logLevel']
 
 url_onevizion_without_protocol = re.sub('^http://|^https://', '', settings_data['urlOneVizion'][:-1])
 
@@ -30,6 +29,7 @@ with open('ihub_parameters.json', 'rb') as PFile:
     ihub_data = json.loads(PFile.read().decode('utf-8'))
 
 process_id = ihub_data['processId']
+log_level = ihub_data['logLevel']
 
 integration_log = IntegrationLog(process_id, url_onevizion_without_protocol, ov_access_key, ov_secret_key, None, True, log_level)
 kml_file = KML(url_kmz, integration_log)
