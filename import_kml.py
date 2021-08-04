@@ -204,8 +204,11 @@ class Import:
         return import_id
 
     def start_import(self, import_id, file_name):
-        OVImport(self.url_onevizion_without_protocol, self.access_key, self.secret_key, import_id, file_name, self.import_action, isTokenAuth=True)
-
+        response = OVImport(self.url_onevizion_without_protocol, self.access_key, self.secret_key, import_id, file_name, self.import_action, isTokenAuth=True)
+        if response.request.ok:
+            self.integration_log.add(LogLevel.INFO, f'Import \"{self.import_name}\" started')
+        else:
+            raise Exception(f'Failed to start import. Exception [{str(response.request.text)}]')
 
 class CSVHeader(Enum):
     REG_ID = 'RegistrationID'
