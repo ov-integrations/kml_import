@@ -1,5 +1,5 @@
 from jsonschema import validate
-from import_kml import Integration, KML, CSV, Import, IntegrationException
+from import_kml import Integration, KML, CSV, Import
 from onevizion import IntegrationLog
 import json
 import re
@@ -31,10 +31,9 @@ with open('ihub_parameters.json', 'rb') as PFile:
 process_id = ihub_data['processId']
 
 integration_log = IntegrationLog(process_id, url_onevizion_without_protocol, ov_access_key, ov_secret_key, isTokenAuth=True)
-integration_exception = IntegrationException(integration_log)
-kml_file = KML(url_kmz, integration_log, integration_exception)
-csv_file = CSV(integration_log, integration_exception)
-integration_import = Import(url_onevizion, url_onevizion_without_protocol, ov_access_key, ov_secret_key, import_name, import_action, integration_log, integration_exception)
+kml_file = KML(url_kmz, integration_log)
+csv_file = CSV(integration_log)
+integration_import = Import(url_onevizion, url_onevizion_without_protocol, ov_access_key, ov_secret_key, import_name, import_action, integration_log)
 integration = Integration(kml_file, csv_file, integration_import, integration_log)
 
 integration.start_integration()
