@@ -57,7 +57,7 @@ class KML:
             self.integration_log.add_log(LogLevel.INFO, 'KMZ file downloaded')
             return response.content
         else:
-            raise Exception (f'Failed download KMZ. Exception [{response.text}]')
+            raise Exception(f'Failed download KMZ. Exception [{response.text}]')
 
     def save(self, kmz_content, kmz_filename):
         with open(kmz_filename, 'wb') as file:
@@ -67,7 +67,7 @@ class KML:
         kml = zipfile.ZipFile(kmz_filename, 'r')
         len_kml = len(kml.filelist)
         if len_kml == 0:
-            raise Exception (f'Failed extract KML file. Exception [KMZ file does not store data]')
+            raise Exception(f'Failed extract KML file. Exception [KMZ file does not store data]')
 
         kml_filename_to_extract = None
         for file in kml.filelist:
@@ -78,10 +78,10 @@ class KML:
                 if kml_filename_to_extract is None:
                     kml_filename_to_extract = file_name
                 else:
-                    raise Exception (f'Failed extract KML file. Exception [KMZ file stores more than one KML file]')
+                    raise Exception(f'Failed extract KML file. Exception [KMZ file stores more than one KML file]')
 
         if kml_filename_to_extract is None:
-            raise Exception (f'Failed extract KML file. Exception [KML file not found in KMZ]')
+            raise Exception(f'Failed extract KML file. Exception [KML file not found in KMZ]')
         else:
             kml.extract(kml_filename_to_extract)
             os.rename(kml_filename_to_extract, kml_filename)
@@ -100,24 +100,24 @@ class CSV:
 
         description_with_date = parse.find('description')
         if description_with_date is None:
-            raise Exception (f'Failed parse KML. Exception [Description for registration_id not found]')
+            raise Exception(f'Failed parse KML. Exception [Description for registration_id not found]')
 
         date = re.search('\d+-\w+-\d+', description_with_date.text)
         if date is None:
-            raise Exception (f'Failed parse KML. Exception [Date for registration_id not found]')
+            raise Exception(f'Failed parse KML. Exception [Date for registration_id not found]')
         else:
             registration_id = f'Fires-{datetime.strptime(date.group(), "%d-%b-%Y").strftime("%m/%d/%y")}'
 
         for placemark in parse.find_all('Placemark'):
             name = placemark.find('name')
             if name is None:
-                raise Exception (f'Failed parse KML. Exception [Field name not found]')
+                raise Exception(f'Failed parse KML. Exception [Field name not found]')
 
             name = name.text
 
             description = placemark.find('description')
             if description is None:
-                raise Exception (f'Failed parse KML. Exception [Field description not found]')
+                raise Exception(f'Failed parse KML. Exception [Field description not found]')
 
             description = description.text.strip()
 
@@ -129,21 +129,21 @@ class CSV:
                     break
 
             if fire_type is None:
-                raise Exception (f'Failed parse KML. Exception [Field fire_type not found]')
+                raise Exception(f'Failed parse KML. Exception [Field fire_type not found]')
 
             fire_size_acres = re.search(r'\d+\sacres|\d+acres', description)
             if fire_size_acres is None:
-                raise Exception (f'Failed parse KML. Exception [Field fire_size not found]')
+                raise Exception(f'Failed parse KML. Exception [Field fire_size not found]')
 
             fire_size = re.search(r'\d+', fire_size_acres.group())
             if fire_size is None:
-                raise Exception (f'Failed parse KML. Exception [Number in fire_size field is not found]')
+                raise Exception(f'Failed parse KML. Exception [Number in fire_size field is not found]')
 
             fire_size = fire_size.group()
 
             coordinates = placemark.find('Point').find('coordinates')
             if coordinates is None:
-                raise Exception (f'Failed parse KML. Exception [Field coordinates not found]')
+                raise Exception(f'Failed parse KML. Exception [Field coordinates not found]')
 
             coordinates = re.split(',', coordinates.text)
             parse_list.append({CSVHeader.REG_ID.value:registration_id, CSVHeader.NAME.value:name, CSVHeader.DESCRIPTION.value:description, \
@@ -192,17 +192,17 @@ class Import:
                     break
 
             if import_id is None:
-                raise Exception (f'Import \"{self.import_name}\" not found')
+                raise Exception(f'Import \"{self.import_name}\" not found')
             else:
                 self.integration_log.add_log(LogLevel.INFO, f'Import \"{self.import_name}\" founded')
         else:
-            raise Exception (f'Failed to receive import. Exception [{str(response.text)}]')
+            raise Exception(f'Failed to receive import. Exception [{str(response.text)}]')
 
         return import_id
 
     def start_import(self, import_id, file_name):
         OVImport(self.url_onevizion_without_protocol, self.access_key, self.secret_key, import_id, file_name, self.import_action, isTokenAuth=True)
-    
+
 
 class CSVHeader(Enum):
     REG_ID = 'RegistrationID'

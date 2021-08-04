@@ -4,5 +4,6 @@
     "ovAccessKey": "key",
     "ovSecretKey": "key",
     "importName": "import",
-    "importAction": "action"
+    "importAction": "action",
+    "logLevel": "level"
 }
