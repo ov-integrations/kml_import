@@ -1,6 +1,6 @@
 from jsonschema import validate
 from import_kml import Integration, KML, CSV, Import
-from onevizion import IntegrationLog
+from onevizion import IntegrationLog, LogLevel
 import json
 import re
 
@@ -37,4 +37,8 @@ csv_file = CSV(integration_log)
 integration_import = Import(url_onevizion, url_onevizion_without_protocol, ov_access_key, ov_secret_key, import_name, import_action, integration_log)
 integration = Integration(kml_file, csv_file, integration_import, integration_log)
 
-integration.start_integration()
+try:
+    integration.start_integration()
+except Exception as e:
+    integration_log.add(LogLevel.ERROR, str(e))
+    raise e

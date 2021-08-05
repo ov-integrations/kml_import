@@ -29,9 +29,6 @@ class Integration:
             parse_list = self.csv.parse(Integration.KML_FILENAME)
             self.csv.create(parse_list, Integration.CSV_FILENAME)
             self.integration_import.import_process(Integration.CSV_FILENAME)
-        except Exception as e:
-            self.integration_log.add(LogLevel.ERROR, str(e))
-            raise e
         finally:
             self.delete_files()
 
@@ -85,10 +82,10 @@ class KML:
 
         if kml_filename_to_extract is None:
             raise Exception(f'Failed extract KML file. Exception [KML file not found in KMZ]')
-        else:
-            kml.extract(kml_filename_to_extract)
-            os.rename(kml_filename_to_extract, kml_filename)
-            self.integration_log.add(LogLevel.INFO, 'KML file extracted')
+
+        kml.extract(kml_filename_to_extract)
+        os.rename(kml_filename_to_extract, kml_filename)
+        self.integration_log.add(LogLevel.INFO, 'KML file extracted')
 
 
 class CSV:
@@ -108,8 +105,8 @@ class CSV:
         date = re.search('\d+-\w+-\d+', description_with_date.text)
         if date is None:
             raise Exception(f'Failed parse KML. Exception [Date for registration_id not found]')
-        else:
-            registration_id = f'Fires-{datetime.strptime(date.group(), "%d-%b-%Y").strftime("%m/%d/%y")}'
+
+        registration_id = f'Fires-{datetime.strptime(date.group(), "%d-%b-%Y").strftime("%m/%d/%y")}'
 
         for placemark in parse.find_all('Placemark'):
             name = placemark.find('name')
@@ -196,8 +193,8 @@ class Import:
 
             if import_id is None:
                 raise Exception(f'Import \"{self.import_name}\" not found')
-            else:
-                self.integration_log.add(LogLevel.INFO, f'Import \"{self.import_name}\" founded')
+
+            self.integration_log.add(LogLevel.INFO, f'Import \"{self.import_name}\" founded')
         else:
             raise Exception(f'Failed to receive import. Exception [{str(response.text)}]')
 
