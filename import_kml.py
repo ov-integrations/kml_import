@@ -106,7 +106,7 @@ class CSV:
             if description is None:
                 raise Exception(f'Failed parse KML. Exception [Field description not found]')
 
-            parse_list.append({CSVHeader.NAME.value:name.text, CSVHeader.DESCRIPTION.value:description.text.strip()})
+            parse_list.append({CSVHeader.NAME.value:name.text.strip(), CSVHeader.DESCRIPTION.value:description.text.strip()})
 
         self.integration_log.add(LogLevel.INFO, 'KML file parsed')
         return parse_list
