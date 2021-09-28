@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><COMPONENTS author="iemelyanov" description="" name="inside.onevizion.com_BPL_09282021155340.xml" site="https&#x3a;&#x2f;&#x2f;inside.onevizion.com" ts="" ><XITOR_TYPES>
+<?xml version="1.0" encoding="UTF-8"?><COMPONENTS author="iemelyanov" description="" name="components.xml" site="https&#x3a;&#x2f;&#x2f;inside.onevizion.com" ts="" ><XITOR_TYPES>
  <XITOR_TYPES_ITEM>
   <APPLET_LABEL>
    <T_LABEL>
@@ -483,7 +483,7 @@
   </APP_LABEL>
   <CONFIG_FIELD_ID>1000062855</CONFIG_FIELD_ID>
   <CONFIG_FIELD_NAME>F_DESCRIPTION</CONFIG_FIELD_NAME>
-  <DATA_TYPE>7</DATA_TYPE>
+  <DATA_TYPE>5</DATA_TYPE>
   <FIELD_WIDTH>540</FIELD_WIDTH>
   <GRID_COLUMN_WIDTH>270</GRID_COLUMN_WIDTH>
   <IMAGE_ROTATE>0</IMAGE_ROTATE>
@@ -495,7 +495,7 @@
   <IS_SEPARATE_THOUSANDS>0</IS_SEPARATE_THOUSANDS>
   <IS_STATIC>0</IS_STATIC>
   <IS_TWO_COLS_SPAN>1</IS_TWO_COLS_SPAN>
-  <LINES_QTY>12</LINES_QTY>
+  <LINES_QTY>6</LINES_QTY>
   <LOG_BLOB_CHANGES>0</LOG_BLOB_CHANGES>
   <PARENS_FOR_NEGATIVE>0</PARENS_FOR_NEGATIVE>
   <SHORT_NAME_LABEL/>
@@ -3696,7 +3696,7 @@ W    Withdrawn</DESCRIPTION>
    </T_CF_TAB_ELEM_XREF>
    <T_CF_TAB_ELEM_XREF>
     <CONFIG_GROUP_ID>1000065084</CONFIG_GROUP_ID>
-    <ROW_POS>9</ROW_POS>
+    <ROW_POS>10</ROW_POS>
     <COL_POS>1</COL_POS>
     <CONFIG_ELEMENT_ID>10013595</CONFIG_ELEMENT_ID>
     <CONFIG_ELEMENT_TYPE_ID>1</CONFIG_ELEMENT_TYPE_ID>
@@ -3725,7 +3725,7 @@ W    Withdrawn</DESCRIPTION>
       </APP_LABEL>
       <CONFIG_FIELD_ID>1000062855</CONFIG_FIELD_ID>
       <CONFIG_FIELD_NAME>F_DESCRIPTION</CONFIG_FIELD_NAME>
-      <DATA_TYPE>7</DATA_TYPE>
+      <DATA_TYPE>5</DATA_TYPE>
       <FIELD_WIDTH>540</FIELD_WIDTH>
       <GRID_COLUMN_WIDTH>270</GRID_COLUMN_WIDTH>
       <IMAGE_ROTATE>0</IMAGE_ROTATE>
@@ -3737,7 +3737,7 @@ W    Withdrawn</DESCRIPTION>
       <IS_SEPARATE_THOUSANDS>0</IS_SEPARATE_THOUSANDS>
       <IS_STATIC>0</IS_STATIC>
       <IS_TWO_COLS_SPAN>1</IS_TWO_COLS_SPAN>
-      <LINES_QTY>12</LINES_QTY>
+      <LINES_QTY>6</LINES_QTY>
       <LOG_BLOB_CHANGES>0</LOG_BLOB_CHANGES>
       <PARENS_FOR_NEGATIVE>0</PARENS_FOR_NEGATIVE>
       <SHORT_NAME_LABEL/>
@@ -3917,8 +3917,15 @@ where c.is_static = 0 or c.config_field_name in (&apos;XITOR_KEY&apos;,&apos;XIT
 
 begin
 
-    v_description := nvl(util.getvalstrbyid(:pk, 1000062855 /*F_DESCRIPTION*/), &apos;n/a&apos;);
+    v_description := nvl(util.getvalstrbyid(:pk, :id_num), &apos;n/a&apos;);
     if v_description = &apos;n/a&apos; then
+        util.setvalnumbyid(:pk, 1000062866 /*F_SIZE*/, null);
+        util.setvalnumbyid(:pk, 1000062852/*F_LATITUDE*/, null);
+        util.setvalnumbyid(:pk, 1000062853/*F_LONGITUDE*/, null);
+        util.setvalnumbyid(:pk, 1000062913/*F_PERCENT_CONTAINED*/, null);
+        util.setvalnumbyid(:pk, 1000062867/*F_FIRE_TYPE*/, null);
+        util.setvaldatebyid(:pk, 1000062912/*F_REPORT_DATE*/, null);  
+        util.setvaldatebyid(:pk, 1000062914/*F_EXPECTED_CONTAINMENT*/, null);
         return;
     end if;
 
@@ -3949,14 +3956,18 @@ begin
 
     util.setvalnumbyid(:pk, 1000062867/*F_FIRE_TYPE*/, v_type_id, 1);
 
-    v_report_date := regexp_substr(v_description, &apos;\d+/\d+/\d+&apos;);
-    if v_report_date is not null then
+    v_report_date := regexp_substr(substr(v_description, length(&apos;Report Date:&apos;), instr(v_description, &apos;Latitude&apos;)), &apos;\d+/\d+/\d+&apos;);
+    if v_report_date is null then
+        util.setvaldatebyid(:pk, 1000062912/*F_REPORT_DATE*/, null);
+    else
         util.setvaldatebyid(:pk, 1000062912/*F_REPORT_DATE*/, to_date(v_report_date, &apos;MM/DD/YYYY&apos;));
         v_description := replace(v_description, v_report_date);
     end if;
 
     v_exp_contain := regexp_substr(v_description, &apos;\d+/\d+/\d+&apos;);
-    if v_exp_contain is not null then
+    if v_exp_contain is null then
+        util.setvaldatebyid(:pk, 1000062914/*F_EXPECTED_CONTAINMENT*/, null);
+    else
         util.setvaldatebyid(:pk, 1000062914/*F_EXPECTED_CONTAINMENT*/, to_date(v_exp_contain, &apos;MM/DD/YYYY&apos;));
     end if;
 
@@ -4189,19 +4200,19 @@ end;</SQL_TEXT>
      <T_IMP_DATA_MAP>
       <DATA_MAP_NAME>Description</DATA_MAP_NAME>
       <IMP_COLUMN_ID>10018234</IMP_COLUMN_ID>
-      <IMP_DATA_MAP_ID>1003062</IMP_DATA_MAP_ID>
+      <IMP_DATA_MAP_ID>1003084</IMP_DATA_MAP_ID>
       <IMP_DATA_TYPE_ID>1</IMP_DATA_TYPE_ID>
       <IMP_DATA_TYPE>Configurable Field</IMP_DATA_TYPE>
       <IMP_ENTITY_ID>1002685</IMP_ENTITY_ID>
       <IMP_SPEC_ID>10017666</IMP_SPEC_ID>
-      <ORDER_NUMBER>4</ORDER_NUMBER>
+      <ORDER_NUMBER>6</ORDER_NUMBER>
       <IMP_DATA_MAP_PARAMS/>
       <IMP_DATA_MAP_PARAM_VALS>
        <T_IMP_DATA_MAP_PARAM_VAL>
         <IMP_DATA_TYPE_PARAM_ID>1</IMP_DATA_TYPE_PARAM_ID>
         <IMP_DATA_TYPE_ID>1</IMP_DATA_TYPE_ID>
-        <IMP_DATA_TYPE_MAP_ID>1003062</IMP_DATA_TYPE_MAP_ID>
-        <IMP_DATA_TYPE_PARAM_VALUE_ID>1003336</IMP_DATA_TYPE_PARAM_VALUE_ID>
+        <IMP_DATA_TYPE_MAP_ID>1003084</IMP_DATA_TYPE_MAP_ID>
+        <IMP_DATA_TYPE_PARAM_VALUE_ID>1003366</IMP_DATA_TYPE_PARAM_VALUE_ID>
         <VALUE>1000062855</VALUE>
         <DISPLAY_VALUE>F:Description - F_DESCRIPTION</DISPLAY_VALUE>
         <PROGRAM_ID>1</PROGRAM_ID>
@@ -4211,15 +4222,15 @@ end;</SQL_TEXT>
        <T_IMP_DATA_MAP_PARAM_VAL>
         <IMP_DATA_TYPE_PARAM_ID>16</IMP_DATA_TYPE_PARAM_ID>
         <IMP_DATA_TYPE_ID>1</IMP_DATA_TYPE_ID>
-        <IMP_DATA_TYPE_MAP_ID>1003062</IMP_DATA_TYPE_MAP_ID>
-        <IMP_DATA_TYPE_PARAM_VALUE_ID>1003337</IMP_DATA_TYPE_PARAM_VALUE_ID>
+        <IMP_DATA_TYPE_MAP_ID>1003084</IMP_DATA_TYPE_MAP_ID>
+        <IMP_DATA_TYPE_PARAM_VALUE_ID>1003367</IMP_DATA_TYPE_PARAM_VALUE_ID>
         <PROGRAM_ID>1</PROGRAM_ID>
        </T_IMP_DATA_MAP_PARAM_VAL>
        <T_IMP_DATA_MAP_PARAM_VAL>
         <IMP_DATA_TYPE_PARAM_ID>17</IMP_DATA_TYPE_PARAM_ID>
         <IMP_DATA_TYPE_ID>1</IMP_DATA_TYPE_ID>
-        <IMP_DATA_TYPE_MAP_ID>1003062</IMP_DATA_TYPE_MAP_ID>
-        <IMP_DATA_TYPE_PARAM_VALUE_ID>1003338</IMP_DATA_TYPE_PARAM_VALUE_ID>
+        <IMP_DATA_TYPE_MAP_ID>1003084</IMP_DATA_TYPE_MAP_ID>
+        <IMP_DATA_TYPE_PARAM_VALUE_ID>1003368</IMP_DATA_TYPE_PARAM_VALUE_ID>
         <PROGRAM_ID>1</PROGRAM_ID>
        </T_IMP_DATA_MAP_PARAM_VAL>
       </IMP_DATA_MAP_PARAM_VALS>
