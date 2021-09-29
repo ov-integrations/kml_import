@@ -105,7 +105,7 @@ class CSV:
 
             description = placemark.find('description')
             if description is None:
-                self.integration_log.add(LogLevel.WARNING, f'Failed parse KML. Exception [Field description not found for {name}]')
+                self.integration_log.add(LogLevel.WARNING, f'Description field is not found for {name}, it will be skipped')
 
             parse_list.append({CSVHeader.NAME.value:name, CSVHeader.DESCRIPTION.value:description.text.strip()})
 
