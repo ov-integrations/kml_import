@@ -101,12 +101,13 @@ class CSV:
             name = placemark.find('name')
             if name is None:
                 raise Exception(f'Failed parse KML. Exception [Field name not found]')
+            name = name.text.strip()
 
             description = placemark.find('description')
             if description is None:
-                raise Exception(f'Failed parse KML. Exception [Field description not found]')
+                self.integration_log.add(LogLevel.WARNING, f'Failed parse KML. Exception [Field description not found for {name}]')
 
-            parse_list.append({CSVHeader.NAME.value:name.text.strip(), CSVHeader.DESCRIPTION.value:description.text.strip()})
+            parse_list.append({CSVHeader.NAME.value:name, CSVHeader.DESCRIPTION.value:description.text.strip()})
 
         self.integration_log.add(LogLevel.INFO, 'KML file parsed')
         return parse_list
