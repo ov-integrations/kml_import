@@ -26,14 +26,14 @@ settings.json
     "ovAccessKey": "******",
     "ovSecretKey": "******",
     "importName": "Fires Default Data Import",
-    "importAction": "INSERT"
+    "importAction": "INSERT_UPDATE"
 }
 ```
 
 file.csv
 ```csv
-RegistrationID,Name,FireSize,FireType,Latitude,Longitude,Description
-Fires-08/03/21,ALDER CREEK,9055,Wildfire,45.790,-113.101,<b>Report Date:</b> 07/09/2021<br/> <b>Latitude:</b> 45.790<br/> <b>Longitude:</b> -113.101<br/> <b>Fire Location:</b> N/A<br/> <b>Fire Size:</b> 9055 acres (3664.4 ha)<br/> <b>Percent Contained:</b> 10% <br/> <b>Expected Containment:</b> 11/1/2021<br/> <b>Fire Type:</b> Wildfire<br/> <b>Team Type:</b> Incident Management Team - Type 1<br/> See http://www.nifc.gov/news/sitreprt.pdf for more information
+Name,Description
+ALDER CREEK,<b>Report Date:</b> 07/09/2021<br/> <b>Latitude:</b> 45.790<br/> <b>Longitude:</b> -113.101<br/> <b>Fire Location:</b> N/A<br/> <b>Fire Size:</b> 9055 acres (3664.4 ha)<br/> <b>Percent Contained:</b> 10% <br/> <b>Expected Containment:</b> 11/1/2021<br/> <b>Fire Type:</b> Wildfire<br/> <b>Team Type:</b> Incident Management Team - Type 1<br/> See http://www.nifc.gov/news/sitreprt.pdf for more information
 ```
 
 file.kml

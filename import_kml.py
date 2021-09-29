@@ -1,6 +1,5 @@
 from onevizion import LogLevel, OVImport
 from bs4 import BeautifulSoup
-from datetime import datetime
 from enum import Enum
 import requests
 import zipfile
@@ -98,66 +97,24 @@ class CSV:
         with open(kml_filename, 'r') as kml:
             parse = BeautifulSoup(kml, 'lxml-xml')
 
-        description_with_date = parse.find('description')
-        if description_with_date is None:
-            raise Exception(f'Failed parse KML. Exception [Description for registration_id not found]')
-
-        date = re.search('\d+-\w+-\d+', description_with_date.text)
-        if date is None:
-            raise Exception(f'Failed parse KML. Exception [Date for registration_id not found]')
-
-        registration_id = f'Fires-{datetime.strptime(date.group(), "%d-%b-%Y").strftime("%m/%d/%y")}'
-
         for placemark in parse.find_all('Placemark'):
             name = placemark.find('name')
             if name is None:
                 raise Exception(f'Failed parse KML. Exception [Field name not found]')
-
-            name = name.text
+            name = name.text.strip()
 
             description = placemark.find('description')
             if description is None:
-                raise Exception(f'Failed parse KML. Exception [Field description not found]')
+                self.integration_log.add(LogLevel.WARNING, f'Description field is not found for {name}, it will be skipped')
 
-            description = description.text.strip()
-
-            for split in re.split('<br/>', description):
-                if re.search('Fire Type', split) is None:
-                    continue
-                else:
-                    fire_type = re.split('</b>', split)[1].strip()
-                    break
-
-            if fire_type is None:
-                raise Exception(f'Failed parse KML. Exception [Field fire_type not found]')
-
-            fire_size_acres = re.search(r'\d+\sacres|\d+acres', description)
-            if fire_size_acres is None:
-                raise Exception(f'Failed parse KML. Exception [Field fire_size not found]')
-
-            fire_size = re.search(r'\d+', fire_size_acres.group())
-            if fire_size is None:
-                raise Exception(f'Failed parse KML. Exception [Number in fire_size field is not found]')
-
-            fire_size = fire_size.group()
-
-            coordinates = placemark.find('Point').find('coordinates')
-            if coordinates is None:
-                raise Exception(f'Failed parse KML. Exception [Field coordinates not found]')
-
-            coordinates = re.split(',', coordinates.text)
-            parse_list.append({CSVHeader.REG_ID.value:registration_id, CSVHeader.NAME.value:name, CSVHeader.DESCRIPTION.value:description, \
-                                CSVHeader.FIRE_SIZE.value:fire_size, CSVHeader.FIRE_TYPE.value:fire_type, CSVHeader.LATITUDE.value:coordinates[1], \
-                                    CSVHeader.LONGITUDE.value:coordinates[0]})
+            parse_list.append({CSVHeader.NAME.value:name, CSVHeader.DESCRIPTION.value:description.text.strip()})
 
         self.integration_log.add(LogLevel.INFO, 'KML file parsed')
         return parse_list
 
     def create(self, parse_list, csv_filename):
         with open(csv_filename, 'w') as csv_file:
-            field_names = [CSVHeader.REG_ID.value, CSVHeader.NAME.value, CSVHeader.DESCRIPTION.value, \
-                            CSVHeader.FIRE_SIZE.value, CSVHeader.FIRE_TYPE.value, CSVHeader.LATITUDE.value, \
-                                CSVHeader.LONGITUDE.value]
+            field_names = [CSVHeader.NAME.value, CSVHeader.DESCRIPTION.value]
             writer = csv.DictWriter(csv_file, field_names)
             writer.writeheader()
             writer.writerows(parse_list)
@@ -208,10 +165,5 @@ class Import:
             raise Exception(f'Failed to start import. Exception [{str(response.request.text)}]')
 
 class CSVHeader(Enum):
-    REG_ID = 'RegistrationID'
     NAME = 'Name'
     DESCRIPTION = 'Description'
-    FIRE_SIZE = 'FireSize'
-    FIRE_TYPE = 'FireType'
-    LATITUDE = 'Latitude'
-    LONGITUDE = 'Longitude'
