@@ -26,6 +26,10 @@
         "importAction": {
             "type": "string",
             "minLength": 1
+        },
+        "commandStart": {
+            "type": "string",
+            "minLength": 1
         }
     }
 }
