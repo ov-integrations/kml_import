@@ -4,7 +4,5 @@
     "ovAccessKey": "key",
     "ovSecretKey": "key",
     "importName": "import",
-    "importAction": "action",
-
-    "commandStart": "python3 module_settings.py"
+    "importAction": "action"
 }
