@@ -1,0 +1,5 @@
+jsonschema==4.4.0
+onevizion==1.0.35
+beautifulsoup4==4.11.1
+lxml==4.8.0
+requests==2.27.1
